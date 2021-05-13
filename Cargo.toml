@@ -1,0 +1,9 @@
+[package]
+name = "stylecs"
+version = "0.1.0"
+authors = ["Jonathan Johnson <jon@khonsulabs.com>"]
+edition = "2018"
+
+[dependencies]
+euclid = "0.22"
+palette = "0.5"
