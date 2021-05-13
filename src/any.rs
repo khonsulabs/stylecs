@@ -6,9 +6,7 @@ pub trait AnyStyleComponent<Unit>: StyleComponent<Unit> + Send + Sync + Debug + 
     fn clone_to_style_component(&self) -> Box<dyn AnyStyleComponent<Unit>>;
 }
 
-impl<T: StyleComponent<Unit> + Clone, Unit: Send + Sync + Debug + 'static> AnyStyleComponent<Unit>
-    for T
-{
+impl<T: StyleComponent<Unit> + Clone, Unit: Send + Sync + 'static> AnyStyleComponent<Unit> for T {
     fn as_any(&self) -> &'_ dyn std::any::Any {
         self
     }

@@ -14,6 +14,12 @@ pub enum Weight {
     Other(u16),
 }
 
+impl Default for Weight {
+    fn default() -> Self {
+        Self::Normal
+    }
+}
+
 impl UnscaledStyleComponent<Points> for Weight {}
 
 impl Weight {

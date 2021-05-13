@@ -15,17 +15,17 @@ mod weight;
 pub use self::{
     alignment::{Alignment, VerticalAlignment},
     any::AnyStyleComponent,
-    colors::{BackgroundColor, ColorPair, ForegroundColor},
+    colors::{BackgroundColor, ColorPair, ForegroundColor, SystemTheme},
     font_family::FontFamily,
     font_size::FontSize,
     font_style::FontStyle,
     weight::Weight,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Pixels;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Points;
 
 #[derive(Debug)]
@@ -33,7 +33,7 @@ pub struct Style<Unit: 'static> {
     components: HashMap<TypeId, Box<dyn AnyStyleComponent<Unit>>>,
 }
 
-impl<Unit: Send + Sync + Debug> Clone for Style<Unit> {
+impl<Unit: Send + Sync> Clone for Style<Unit> {
     fn clone(&self) -> Self {
         let mut new_map = HashMap::<TypeId, Box<dyn AnyStyleComponent<Unit>>>::new();
 
@@ -55,7 +55,7 @@ impl<Unit> Default for Style<Unit> {
     }
 }
 
-impl<Unit: Send + Sync + Debug + 'static> Style<Unit> {
+impl<Unit: Send + Sync + 'static> Style<Unit> {
     pub fn new() -> Self {
         Self {
             components: HashMap::new(),
@@ -137,7 +137,7 @@ where
     }
 }
 
-impl<Unit: Send + Sync + Debug + 'static> Style<Unit> {
+impl<Unit: Send + Sync + 'static> Style<Unit> {
     pub fn merge_with(&self, other: &Style<Unit>, is_inheritance: bool) -> Self {
         let mut merged_components = HashMap::<TypeId, Box<dyn AnyStyleComponent<Unit>>>::new();
         let self_types = self.components.keys().cloned().collect::<HashSet<_>>();
