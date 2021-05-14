@@ -1,5 +1,6 @@
-use crate::StyleComponent;
 use std::fmt::Debug;
+
+use crate::StyleComponent;
 
 pub trait AnyStyleComponent<Unit>: StyleComponent<Unit> + Send + Sync + Debug + 'static {
     fn as_any(&self) -> &'_ dyn std::any::Any;

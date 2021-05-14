@@ -1,9 +1,10 @@
-use euclid::Scale;
 use std::{
     any::TypeId,
     collections::{HashMap, HashSet},
     fmt::Debug,
 };
+
+use euclid::Scale;
 
 mod alignment;
 mod any;

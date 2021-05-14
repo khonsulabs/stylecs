@@ -1,7 +1,8 @@
-use crate::{Points, UnscaledStyleComponent};
+use std::fmt::Debug;
 
 use palette::Srgba;
-use std::fmt::Debug;
+
+use crate::{Points, UnscaledStyleComponent};
 
 pub enum SystemTheme {
     Light,
