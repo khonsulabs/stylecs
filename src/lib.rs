@@ -23,6 +23,8 @@ pub use self::{
     weight::Weight,
 };
 
+pub use palette;
+
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Pixels;
 
