@@ -9,17 +9,21 @@ use euclid::Scale;
 mod alignment;
 mod any;
 mod colors;
+mod dimension;
 mod font_family;
 mod font_size;
 mod font_style;
+mod surround;
 mod weight;
 pub use self::{
     alignment::{Alignment, VerticalAlignment},
     any::AnyStyleComponent,
     colors::{BackgroundColor, ColorPair, ForegroundColor, SystemTheme},
+    dimension::Dimension,
     font_family::FontFamily,
     font_size::FontSize,
     font_style::FontStyle,
+    surround::Surround,
     weight::Weight,
 };
 
