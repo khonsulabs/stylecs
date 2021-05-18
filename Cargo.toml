@@ -3,6 +3,12 @@ name = "stylecs"
 version = "0.1.0"
 authors = ["Jonathan Johnson <jon@khonsulabs.com>"]
 edition = "2018"
+description = "A style component system to aide in building themable apps."
+repository = "https://github.com/khonsulabs/stylecs"
+license = "MIT OR Apache-2.0"
+keywords = ["styles", "stylesheets", "theming"]
+categories = ["data-structures"]
+readme = "./README.md"
 
 [dependencies]
 euclid = "0.22"

@@ -1,3 +1,5 @@
+#![allow(missing_docs)] // TODO not sure if this file is even going to be used.
+
 use euclid::Length;
 
 use crate::Points;
@@ -14,26 +16,31 @@ pub enum Dimension<Unit = Points> {
 }
 
 impl<Unit> Dimension<Unit> {
-    pub fn from_f32(value: f32) -> Self {
+    #[must_use]
+    pub const fn from_f32(value: f32) -> Self {
         Self::Length(Length::new(value))
     }
 
+    #[must_use]
     pub fn from_length<V: Into<Length<f32, Unit>>>(value: V) -> Self {
         Self::Length(value.into())
     }
 
-    pub fn is_auto(&self) -> bool {
+    #[must_use]
+    pub const fn is_auto(&self) -> bool {
         match self {
             Dimension::Minimal | Dimension::Auto => true,
             Dimension::Length(_) => false,
         }
     }
 
-    pub fn is_length(&self) -> bool {
+    #[must_use]
+    pub const fn is_length(&self) -> bool {
         !self.is_auto()
     }
 
-    pub fn length(&self) -> Option<Length<f32, Unit>> {
+    #[must_use]
+    pub const fn length(&self) -> Option<Length<f32, Unit>> {
         if let Dimension::Length(points) = &self {
             Some(*points)
         } else {
@@ -44,12 +51,12 @@ impl<Unit> Dimension<Unit> {
 
 impl<Unit> Default for Dimension<Unit> {
     fn default() -> Self {
-        Dimension::Auto
+        Self::Auto
     }
 }
 
 impl<Unit> From<Length<f32, Unit>> for Dimension<Unit> {
     fn from(value: Length<f32, Unit>) -> Self {
-        Dimension::from_length(value)
+        Self::from_length(value)
     }
 }
