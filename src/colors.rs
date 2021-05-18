@@ -4,9 +4,23 @@ use palette::Srgba;
 
 use crate::{Points, UnscaledStyleComponent};
 
+#[derive(Debug, Clone)]
 pub enum SystemTheme {
     Light,
     Dark,
+}
+
+impl UnscaledStyleComponent<Points> for SystemTheme {
+    fn unscaled_should_be_inherited(&self) -> bool {
+        true
+    }
+}
+
+impl Default for SystemTheme {
+    fn default() -> Self {
+        // So tempted to make this dark.
+        SystemTheme::Light
+    }
 }
 
 #[derive(Debug, Clone, Default, Copy)]
@@ -38,47 +52,5 @@ impl ColorPair {
             SystemTheme::Light => self.light_color,
             SystemTheme::Dark => self.dark_color,
         }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct ForegroundColor(pub ColorPair);
-impl UnscaledStyleComponent<Points> for ForegroundColor {}
-
-impl Default for ForegroundColor {
-    fn default() -> Self {
-        ForegroundColor(ColorPair {
-            light_color: Srgba::new(0., 0., 0., 1.),
-            dark_color: Srgba::new(1., 1., 1., 1.),
-        })
-    }
-}
-
-impl From<ForegroundColor> for ColorPair {
-    fn from(color: ForegroundColor) -> Self {
-        color.0
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct BackgroundColor(pub ColorPair);
-impl UnscaledStyleComponent<Points> for BackgroundColor {
-    fn unscaled_should_be_inherited(&self) -> bool {
-        false
-    }
-}
-
-impl Default for BackgroundColor {
-    fn default() -> Self {
-        BackgroundColor(ColorPair {
-            light_color: Srgba::new(1., 1., 1., 1.),
-            dark_color: Srgba::new(0., 0., 0., 1.),
-        })
-    }
-}
-
-impl From<BackgroundColor> for ColorPair {
-    fn from(color: BackgroundColor) -> Self {
-        color.0
     }
 }
