@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["stylecs"] = [{"text":"impl&lt;Unit&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.StructuralPartialEq.html\" title=\"trait core::marker::StructuralPartialEq\">StructuralPartialEq</a> for <a class=\"struct\" href=\"stylecs/struct.Surround.html\" title=\"struct stylecs::Surround\">Surround</a>&lt;Unit&gt;","synthetic":false,"types":["stylecs::surround::Surround"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
