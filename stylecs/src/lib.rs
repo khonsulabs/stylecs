@@ -92,11 +92,11 @@ impl Style {
 
     /// Returns the style component of type `T`, if present.
     #[must_use]
-    pub fn get_with_fallback<T: FallbackComponent<V>, V>(&self) -> Option<&V> {
+    pub fn get_with_fallback<T: FallbackComponent>(&self) -> Option<&T::Value> {
         if let Some(component) = self.get::<T>() {
             component.value()
         } else if T::has_fallback() {
-            self.get_with_fallback::<T::Fallback, V>()
+            self.get_with_fallback::<T::Fallback>()
         } else {
             None
         }
@@ -154,36 +154,20 @@ impl Style {
 /// A style component that has a fallback. An example could be `TextColor` and
 /// `ForegroundColor` components. `TextColor` could specify `ForegroundColor` as
 /// a fallback. Used with [`Style::get_with_fallback`].
-pub trait FallbackComponent<Value>: StyleComponent {
-    /// The style component to fall back to.
-    type Fallback: FallbackComponent<Value>;
+pub trait FallbackComponent: StyleComponent {
+    /// The style component to fall back to. If this is the root, use Self. The
+    /// provided implementation of [`Self::has_fallback()`] will return false
+    /// when `Self::Fallback` == `Self`.
+    type Fallback: FallbackComponent<Value = Self::Value>;
+    /// The contained value of this component.
+    type Value;
 
     /// The contained value of the component.
-    fn value(&self) -> Option<&'_ Value>;
+    fn value(&self) -> Option<&'_ Self::Value>;
 
-    /// Returns true if there is a fallback. Typically, you should never
-    /// implement this, and use [`ComponentRoot`] if you're defining a root
-    /// fallback component.
+    /// Returns true if there is a fallback.
     #[must_use]
     fn has_fallback() -> bool {
-        true
-    }
-}
-
-/// A type used to signal the root of a fallback chain.
-#[derive(Debug)]
-pub struct ComponentRoot;
-
-impl StyleComponent for ComponentRoot {}
-
-impl<T> FallbackComponent<T> for ComponentRoot {
-    type Fallback = Self;
-
-    fn value(&self) -> Option<&'_ T> {
-        None
-    }
-
-    fn has_fallback() -> bool {
-        false
+        TypeId::of::<Self>() != TypeId::of::<Self::Fallback>()
     }
 }
