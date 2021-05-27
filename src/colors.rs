@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use palette::Srgba;
 
-use crate::UnscaledStyleComponent;
+use crate::StyleComponent;
 
 /// The theme variant for the system.
 #[derive(Debug, Clone)]
@@ -13,7 +13,7 @@ pub enum SystemTheme {
     Dark,
 }
 
-impl UnscaledStyleComponent for SystemTheme {
+impl StyleComponent for SystemTheme {
     fn should_be_inherited(&self) -> bool {
         true
     }
