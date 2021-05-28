@@ -1,5 +1,10 @@
 # stylecs: Style Component System
 
+[![crate version](https://img.shields.io/crates/v/stylecs.svg)](https://crates.io/crates/stylecs)
+[![Live Build Status](https://img.shields.io/github/workflow/status/khonsulabs/stylecs/Tests/main)](https://github.com/khonsulabs/stylecs/actions?query=workflow:Tests)
+[![HTML Coverage Report for `main` branch](https://khonsulabs.github.io/stylecs/coverage/badge.svg)](https://khonsulabs.github.io/stylecs/coverage/)
+[![Documentation for `main` branch](https://img.shields.io/badge/docs-main-informational)](https://khonsulabs.github.io/stylecs/main/stylecs/)
+
 `stylecs` is a crate aimed at solving the challenges needed for declaring styles and style sheets. At the core of this crate is the `StyleComponent` trait, which allows arbitrary types to be used within `Styles`. These types provive:
 
 * The ability for colors to be defind in `ColorPair`s, allowing for styles to define both light and dark colors.
