@@ -83,6 +83,7 @@ impl StyleSheet {
             rules_by_id: other.rules_by_id.clone(),
         };
         combined.rules.extend(other.rules.iter().cloned());
+        combined.rules.extend(self.rules.iter().cloned());
         let rule_offset = other.rules.len();
         for (key, index) in &self.rules_by_id {
             let id_rules = combined.rules_by_id.entry(key.clone()).or_default();
