@@ -64,12 +64,11 @@ impl StyleSheet {
                 let rules = self.rules_by_id.entry(id.0.to_string()).or_default();
                 rules.push(index);
             }
-            Selector::Classes(classes) => {
+            Selector::Classes(classes) =>
                 for class in &classes.0 {
                     let rules = self.rules_by_class.entry(class.to_string()).or_default();
                     rules.push(index);
-                }
-            }
+                },
         }
         self.rules.push(rule);
     }

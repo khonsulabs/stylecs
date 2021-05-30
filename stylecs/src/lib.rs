@@ -12,20 +12,15 @@
 #![cfg_attr(doc, deny(rustdoc::all))]
 
 mod any;
-mod colors;
 mod components;
 mod style;
 /// Types for defining sets of rules.
 pub mod style_sheet;
-mod surround;
-pub use palette;
 
 pub use self::{
     any::AnyStyleComponent,
-    colors::{ColorPair, SystemTheme},
     components::{FallbackComponent, StyleComponent},
     style::Style,
-    surround::Surround,
 };
 
 #[cfg(test)]

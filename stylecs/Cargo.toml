@@ -12,4 +12,3 @@ readme = "./README.md"
 
 [dependencies]
 euclid = "0.22"
-palette = "0.5"
