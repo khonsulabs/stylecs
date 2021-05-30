@@ -27,3 +27,6 @@ pub use self::{
     style::Style,
     surround::Surround,
 };
+
+#[cfg(test)]
+mod tests;

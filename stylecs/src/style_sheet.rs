@@ -21,7 +21,6 @@ impl StyleSheet {
     /// the id or classes provided.
     #[must_use]
     pub fn effective_style_for(&self, mut style: Style, state: &State) -> Style {
-        println!("Checking rules: {:?}", self.rules);
         let mut rules = HashSet::new();
         if let Some(id) = style.get::<Id>() {
             if let Some(id_rules) = self.rules_by_id.get(id.0.as_ref()) {
@@ -38,11 +37,10 @@ impl StyleSheet {
 
         let mut rules = rules.into_iter().collect::<Vec<_>>();
         rules.sort_unstable();
-        println!("Applying rules: {:?}", rules);
         for rule in rules.into_iter().rev() {
             let rule = &self.rules[rule];
             if rule.applies(state) {
-                style = style.merge_with(dbg!(&rule.style), false);
+                style = style.merge_with(&rule.style, false);
             }
         }
 
@@ -66,25 +64,36 @@ impl StyleSheet {
                 let rules = self.rules_by_id.entry(id.0.to_string()).or_default();
                 rules.push(index);
             }
-            Selector::Classes(classes) => {
+            Selector::Classes(classes) =>
                 for class in &classes.0 {
                     let rules = self.rules_by_class.entry(class.to_string()).or_default();
                     rules.push(index);
-                }
-            }
+                },
         }
         self.rules.push(rule);
     }
 
-    pub fn merge_with(mut self, other: &StyleSheet) -> Self {
-        let rule_offset = self.rules.len();
-        self.rules.extend(other.rules.iter().cloned());
-        for (key, index) in other.rules_by_id.iter() {
-            let id_rules = self.rules_by_id.entry(key.clone()).or_default();
+    /// Merges `self` with `other`, such that the rules in `self` are preferred
+    /// to the ones in `other`.
+    #[must_use]
+    pub fn merge_with(&self, other: &Self) -> Self {
+        let mut combined = Self {
+            rules: Vec::with_capacity(self.rules.len() + other.rules.len()),
+            rules_by_class: other.rules_by_class.clone(),
+            rules_by_id: other.rules_by_id.clone(),
+        };
+        combined.rules.extend(other.rules.iter().cloned());
+        let rule_offset = other.rules.len();
+        for (key, index) in &self.rules_by_id {
+            let id_rules = combined.rules_by_id.entry(key.clone()).or_default();
             id_rules.extend(index.iter().map(|&i| i + rule_offset));
         }
+        for (key, index) in &self.rules_by_class {
+            let class_rules = combined.rules_by_class.entry(key.clone()).or_default();
+            class_rules.extend(index.iter().map(|&i| i + rule_offset));
+        }
 
-        self
+        combined
     }
 }
 
@@ -268,7 +277,7 @@ impl From<&'static str> for Classes {
 
 impl From<Vec<String>> for Classes {
     fn from(s: Vec<String>) -> Self {
-        Self(s.into_iter().map(|s| Cow::Owned(s)).collect())
+        Self(s.into_iter().map(Cow::Owned).collect())
     }
 }
 
@@ -279,6 +288,7 @@ impl From<Vec<&'static str>> for Classes {
 }
 
 /// An element state.
+#[derive(Default, Debug)]
 pub struct State {
     /// Whether the element is hovered or not.
     pub hovered: bool,
