@@ -1,9 +1,10 @@
 use std::{any::TypeId, fmt::Debug};
 
-/// A style component. Implementors can be stored within [`Style`].
+/// A style component. Implementors can be stored within
+/// [`Style`](crate::Style).
 pub trait StyleComponent: std::any::Any + Send + Sync + Debug + 'static {
     /// Returns whether the component should be inherited. Affects the behavior
-    /// of [`Style::merge_with`]
+    /// of [`Style::merge_with`](crate::Style::merge_with)
     fn should_be_inherited(&self) -> bool {
         true
     }
@@ -22,7 +23,8 @@ pub trait StyleComponent: std::any::Any + Send + Sync + Debug + 'static {
 
 /// A style component that has a fallback. An example could be `TextColor` and
 /// `ForegroundColor` components. `TextColor` could specify `ForegroundColor` as
-/// a fallback. Used with [`Style::get_with_fallback`].
+/// a fallback. Used with
+/// [`Style::get_with_fallback`](crate::Style::get_with_fallback).
 pub trait FallbackComponent: StyleComponent {
     /// The style component to fall back to. If this is the root, use Self. The
     /// provided implementation of [`Self::has_fallback()`] will return false
