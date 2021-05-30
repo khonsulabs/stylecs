@@ -28,11 +28,6 @@
 <span id="25">25</span>
 <span id="26">26</span>
 <span id="27">27</span>
-<span id="28">28</span>
-<span id="29">29</span>
-<span id="30">30</span>
-<span id="31">31</span>
-<span id="32">32</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! A style component system to aide in building themable apps.</span>
 
@@ -48,20 +43,15 @@
 <span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">doc</span>, <span class="ident">deny</span>(<span class="ident">rustdoc</span>::<span class="ident">all</span>))]</span>
 
 <span class="kw">mod</span> <span class="ident">any</span>;
-<span class="kw">mod</span> <span class="ident">colors</span>;
 <span class="kw">mod</span> <span class="ident">components</span>;
 <span class="kw">mod</span> <span class="ident">style</span>;
 <span class="doccomment">/// Types for defining sets of rules.</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">style_sheet</span>;
-<span class="kw">mod</span> <span class="ident">surround</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">palette</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::{
     <span class="ident">any</span>::<span class="ident">AnyStyleComponent</span>,
-    <span class="ident">colors</span>::{<span class="ident">ColorPair</span>, <span class="ident">SystemTheme</span>},
     <span class="ident">components</span>::{<span class="ident">FallbackComponent</span>, <span class="ident">StyleComponent</span>},
     <span class="ident">style</span>::<span class="ident">Style</span>,
-    <span class="ident">surround</span>::<span class="ident">Surround</span>,
 };
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
