@@ -54,27 +54,33 @@ fn rule_applies_tests() {
         ..State::default()
     };
 
-    assert!(Rule::for_id("a").when_hovered().applies(&only_hovered));
-    assert!(!Rule::for_id("a").when_hovered().applies(&State::default()));
-    assert!(Rule::for_id("a")
+    assert!(Rule::for_classes("a").when_hovered().applies(&only_hovered));
+    assert!(!Rule::for_classes("a")
+        .when_hovered()
+        .applies(&State::default()));
+    assert!(Rule::for_classes("a")
         .when_not_hovered()
         .applies(&State::default()));
 
-    assert!(Rule::for_id("a").when_focused().applies(&only_focused));
-    assert!(!Rule::for_id("a").when_focused().applies(&State::default()));
-    assert!(Rule::for_id("a")
+    assert!(Rule::for_classes("a").when_focused().applies(&only_focused));
+    assert!(!Rule::for_classes("a")
+        .when_focused()
+        .applies(&State::default()));
+    assert!(Rule::for_classes("a")
         .when_not_focused()
         .applies(&State::default()));
 
-    assert!(Rule::for_id("a").when_active().applies(&only_active));
-    assert!(!Rule::for_id("a").when_active().applies(&State::default()));
-    assert!(Rule::for_id("a")
+    assert!(Rule::for_classes("a").when_active().applies(&only_active));
+    assert!(!Rule::for_classes("a")
+        .when_active()
+        .applies(&State::default()));
+    assert!(Rule::for_classes("a")
         .when_not_active()
         .applies(&State::default()));
 
-    assert!(Rule::for_id("a").applies(&State::default()));
-    assert!(Rule::for_id("a")
+    assert!(Rule::for_classes("a").applies(&State::default()));
+    assert!(Rule::for_classes("a")
         .when_not_active()
         .applies(&State::default()));
-    assert!(Rule::for_id("a").applies(&only_hovered));
+    assert!(Rule::for_classes("a").applies(&only_hovered));
 }

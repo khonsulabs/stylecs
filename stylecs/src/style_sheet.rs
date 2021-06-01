@@ -1,6 +1,7 @@
 use std::{
     borrow::Cow,
     collections::{HashMap, HashSet},
+    ops::Deref,
 };
 
 use crate::{Style, StyleComponent};
@@ -10,7 +11,6 @@ use crate::{Style, StyleComponent};
 pub struct StyleSheet {
     rules: Vec<Rule>,
 
-    rules_by_id: HashMap<String, Vec<usize>>,
     rules_by_class: HashMap<String, Vec<usize>>,
 }
 
@@ -22,11 +22,6 @@ impl StyleSheet {
     #[must_use]
     pub fn effective_style_for(&self, mut style: Style, state: &State) -> Style {
         let mut rules = HashSet::new();
-        if let Some(id) = style.get::<Id>() {
-            if let Some(id_rules) = self.rules_by_id.get(id.0.as_ref()) {
-                rules.extend(id_rules.iter().cloned());
-            }
-        }
         if let Some(classes) = style.get::<Classes>() {
             for class in &classes.0 {
                 if let Some(class_rules) = self.rules_by_class.get(class.as_ref()) {
@@ -60,15 +55,12 @@ impl StyleSheet {
     pub fn push(&mut self, rule: Rule) {
         let index = self.rules.len();
         match &rule.selector {
-            Selector::Id(id) => {
-                let rules = self.rules_by_id.entry(id.0.to_string()).or_default();
-                rules.push(index);
-            }
-            Selector::Classes(classes) =>
+            Selector::Classes(classes) => {
                 for class in &classes.0 {
                     let rules = self.rules_by_class.entry(class.to_string()).or_default();
                     rules.push(index);
-                },
+                }
+            }
         }
         self.rules.push(rule);
     }
@@ -80,15 +72,10 @@ impl StyleSheet {
         let mut combined = Self {
             rules: Vec::with_capacity(self.rules.len() + other.rules.len()),
             rules_by_class: other.rules_by_class.clone(),
-            rules_by_id: other.rules_by_id.clone(),
         };
         combined.rules.extend(other.rules.iter().cloned());
         combined.rules.extend(self.rules.iter().cloned());
         let rule_offset = other.rules.len();
-        for (key, index) in &self.rules_by_id {
-            let id_rules = combined.rules_by_id.entry(key.clone()).or_default();
-            id_rules.extend(index.iter().map(|&i| i + rule_offset));
-        }
         for (key, index) in &self.rules_by_class {
             let class_rules = combined.rules_by_class.entry(key.clone()).or_default();
             class_rules.extend(index.iter().map(|&i| i + rule_offset));
@@ -117,18 +104,6 @@ pub struct Rule {
 }
 
 impl Rule {
-    /// Returns a default `Rule` with `selector` of [`Id`] `id`.
-    #[must_use]
-    pub fn for_id<I: Into<Id>>(id: I) -> Self {
-        Self {
-            selector: Selector::Id(id.into()),
-            hovered: None,
-            focused: None,
-            active: None,
-            style: Style::default(),
-        }
-    }
-
     /// Returns a default `Rule` with `selector` of [`Classes`] `classes`.
     #[must_use]
     pub fn for_classes<C: Into<Classes>>(classes: C) -> Self {
@@ -208,40 +183,78 @@ fn check_one_state(condition: Option<bool>, state: bool) -> Option<bool> {
 /// A filter for a [`Rule`].
 #[derive(Debug, Clone)]
 pub enum Selector {
-    /// Matches when a [`Style`] has an [`Id`] component that equals the
-    /// contained value.
-    Id(Id),
-
     /// Matches when a [`Style`] has a [`Classes`] component that contains all
     /// of the classes in the contianed value.
     Classes(Classes),
 }
 
-/// A unique Id. Not inherited when merging styles.
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub struct Id(pub Cow<'static, str>);
-
-impl StyleComponent for Id {
-    fn should_be_inherited(&self) -> bool {
-        false
-    }
-}
-
-impl From<String> for Id {
-    fn from(s: String) -> Self {
-        Self(Cow::Owned(s))
-    }
-}
-
-impl From<&'static str> for Id {
-    fn from(s: &'static str) -> Self {
-        Self(Cow::Borrowed(s))
-    }
-}
-
 /// A list of class names. Not inherited when merging styles.
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub struct Classes(pub Vec<Cow<'static, str>>);
+pub struct Classes(Vec<Cow<'static, str>>);
+
+impl Classes {
+    /// Returns a new Classes component with the classes passed.
+    ///
+    /// # Valid Class Names
+    ///
+    /// Valid characters in class names are:
+    ///
+    /// * `'a'..='z'`
+    /// * `'A'..='Z'`
+    /// * `'0'..='9'`
+    /// * `'_'`
+    /// * `'-'`
+    ///
+    /// # Panics
+    ///
+    /// Panics upon an illegal class name.
+    // TODO refactor to have an error. Implement TryFrom as well, move the panic into the From implementations.
+    #[must_use]
+    pub fn new(mut classes: Vec<Cow<'static, str>>) -> Self {
+        classes.sort();
+        for class in &classes {
+            for ch in class.chars() {
+                match ch {
+                    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' => {}
+                    illegal => panic!("invalid character '{}' in class name '{}'", illegal, class),
+                }
+            }
+        }
+        Self(classes)
+    }
+}
+
+impl Deref for Classes {
+    type Target = Vec<Cow<'static, str>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl From<String> for Classes {
+    fn from(s: String) -> Self {
+        Self::new(vec![Cow::Owned(s)])
+    }
+}
+
+impl From<&'static str> for Classes {
+    fn from(s: &'static str) -> Self {
+        Self::new(vec![Cow::Borrowed(s)])
+    }
+}
+
+impl From<Vec<String>> for Classes {
+    fn from(s: Vec<String>) -> Self {
+        Self::new(s.into_iter().map(Cow::Owned).collect())
+    }
+}
+
+impl From<Vec<&'static str>> for Classes {
+    fn from(s: Vec<&'static str>) -> Self {
+        Self::new(s.into_iter().map(|s| Cow::Borrowed(s)).collect())
+    }
+}
 
 impl StyleComponent for Classes {
     fn should_be_inherited(&self) -> bool {
@@ -336,32 +349,6 @@ where
             self.last_value = resulting_value.clone();
             resulting_value
         }
-    }
-}
-
-impl From<String> for Classes {
-    fn from(s: String) -> Self {
-        Self(vec![Cow::Owned(s)])
-    }
-}
-
-impl From<&'static str> for Classes {
-    fn from(s: &'static str) -> Self {
-        Self(vec![Cow::Borrowed(s)])
-    }
-}
-
-impl From<Vec<String>> for Classes {
-    fn from(mut s: Vec<String>) -> Self {
-        s.sort();
-        Self(s.into_iter().map(Cow::Owned).collect())
-    }
-}
-
-impl From<Vec<&'static str>> for Classes {
-    fn from(mut s: Vec<&'static str>) -> Self {
-        s.sort_unstable();
-        Self(s.into_iter().map(|s| Cow::Borrowed(s)).collect())
     }
 }
 
