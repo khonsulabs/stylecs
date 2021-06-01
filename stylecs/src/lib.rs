@@ -14,8 +14,6 @@
 mod any;
 mod components;
 mod style;
-/// Types for defining sets of rules.
-pub mod style_sheet;
 
 pub use self::{
     any::AnyStyleComponent,
