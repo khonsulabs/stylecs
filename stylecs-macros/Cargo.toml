@@ -1,0 +1,24 @@
+[package]
+name = "stylecs-macros"
+version = "0.1.0"
+edition = "2021"
+description = "Macros for the `stylecs` crate"
+repository = "https://github.com/khonsulabs/stylecs"
+license = "MIT OR Apache-2.0"
+keywords = ["styles", "stylesheets", "theming"]
+categories = ["data-structures"]
+readme = "./README.md"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+attribute-derive = "0.6.0"
+manyhow = "0.4.2"
+proc-macro2 = "1.0.58"
+quote = "1.0.27"
+syn = "2.0.16"
+stylecs-shared = { path = "../stylecs-shared" }
+
+[dev-dependencies]
+stylecs = { path = "../", features = ["derive"] }

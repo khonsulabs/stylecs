@@ -1,2 +1,25 @@
+[package]
+name = "stylecs"
+version = "0.1.0"
+edition = "2021"
+description = "A style component system to aide in building themable apps."
+repository = "https://github.com/khonsulabs/stylecs"
+license = "MIT OR Apache-2.0"
+keywords = ["styles", "stylesheets", "theming"]
+categories = ["data-structures"]
+readme = "./README.md"
+
+[features]
+default = ["derive"]
+derive = ["dep:stylecs-macros"]
+
+[dependencies]
+stylecs-macros = { path = "./stylecs-macros", optional = true }
+stylecs-shared = { path = "./stylecs-shared" }
+interner = { git = "https://github.com/khonsulabs/interner" }
+
 [workspace]
-members = ["stylecs", "xtask"]
+members = ["stylecs-macros", "stylecs-shared", "xtask"]
+
+# [patch.crates-io]
+# interner = { path = "../interner" }
