@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"stylecs":[["impl&lt;'a&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.69.0/core/convert/trait.From.html\" title=\"trait core::convert::From\">From</a>&lt;&amp;'a <a class=\"struct\" href=\"stylecs/struct.StaticName.html\" title=\"struct stylecs::StaticName\">StaticName</a>&gt; for <a class=\"struct\" href=\"stylecs/struct.Name.html\" title=\"struct stylecs::Name\">Name</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

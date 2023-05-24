@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["stylecs","xtask"];
+window.ALL_CRATES = ["stylecs"];
