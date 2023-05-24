@@ -145,119 +145,18 @@
 <a href="#145" id="145">145</a>
 <a href="#146" id="146">146</a>
 <a href="#147" id="147">147</a>
-<a href="#148" id="148">148</a>
-<a href="#149" id="149">149</a>
-<a href="#150" id="150">150</a>
-<a href="#151" id="151">151</a>
-<a href="#152" id="152">152</a>
-<a href="#153" id="153">153</a>
-<a href="#154" id="154">154</a>
-<a href="#155" id="155">155</a>
-<a href="#156" id="156">156</a>
-<a href="#157" id="157">157</a>
-<a href="#158" id="158">158</a>
-<a href="#159" id="159">159</a>
-<a href="#160" id="160">160</a>
-<a href="#161" id="161">161</a>
-<a href="#162" id="162">162</a>
-<a href="#163" id="163">163</a>
-<a href="#164" id="164">164</a>
-<a href="#165" id="165">165</a>
-<a href="#166" id="166">166</a>
-<a href="#167" id="167">167</a>
-<a href="#168" id="168">168</a>
-<a href="#169" id="169">169</a>
-<a href="#170" id="170">170</a>
-<a href="#171" id="171">171</a>
-<a href="#172" id="172">172</a>
-<a href="#173" id="173">173</a>
-<a href="#174" id="174">174</a>
-<a href="#175" id="175">175</a>
-<a href="#176" id="176">176</a>
-<a href="#177" id="177">177</a>
-<a href="#178" id="178">178</a>
-<a href="#179" id="179">179</a>
-<a href="#180" id="180">180</a>
-<a href="#181" id="181">181</a>
-<a href="#182" id="182">182</a>
-<a href="#183" id="183">183</a>
-<a href="#184" id="184">184</a>
-<a href="#185" id="185">185</a>
-<a href="#186" id="186">186</a>
-<a href="#187" id="187">187</a>
-<a href="#188" id="188">188</a>
-<a href="#189" id="189">189</a>
-<a href="#190" id="190">190</a>
-<a href="#191" id="191">191</a>
-<a href="#192" id="192">192</a>
-<a href="#193" id="193">193</a>
-<a href="#194" id="194">194</a>
-<a href="#195" id="195">195</a>
-<a href="#196" id="196">196</a>
-<a href="#197" id="197">197</a>
-<a href="#198" id="198">198</a>
-<a href="#199" id="199">199</a>
-<a href="#200" id="200">200</a>
-<a href="#201" id="201">201</a>
-<a href="#202" id="202">202</a>
-<a href="#203" id="203">203</a>
-<a href="#204" id="204">204</a>
-<a href="#205" id="205">205</a>
-<a href="#206" id="206">206</a>
-<a href="#207" id="207">207</a>
-<a href="#208" id="208">208</a>
-<a href="#209" id="209">209</a>
-<a href="#210" id="210">210</a>
-<a href="#211" id="211">211</a>
-<a href="#212" id="212">212</a>
-<a href="#213" id="213">213</a>
-<a href="#214" id="214">214</a>
-<a href="#215" id="215">215</a>
-<a href="#216" id="216">216</a>
-<a href="#217" id="217">217</a>
-<a href="#218" id="218">218</a>
-<a href="#219" id="219">219</a>
-<a href="#220" id="220">220</a>
-<a href="#221" id="221">221</a>
-<a href="#222" id="222">222</a>
-<a href="#223" id="223">223</a>
-<a href="#224" id="224">224</a>
-<a href="#225" id="225">225</a>
-</pre><pre class="rust"><code><span class="kw">use </span>std::collections::hash_map::RandomState;
-<span class="kw">use </span>std::collections::{hash_map, HashMap, HashSet};
-<span class="kw">use </span>std::hash::BuildHasher;
-
-<span class="kw">use </span><span class="kw">crate</span>::any::AnyComponent;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::any::AnyComponent;
 <span class="kw">use </span><span class="kw">crate</span>::components::DynamicComponent;
+<span class="kw">use </span><span class="kw">crate</span>::object::Object;
 <span class="kw">use crate</span>::{Name, StyleComponent};
 
 <span class="doccomment">/// A set of style components.
-</span><span class="attr">#[derive(Default)]
-</span><span class="kw">pub struct </span>Style&lt;S = RandomState&gt; {
-    components: HashMap&lt;Name, AnyComponent, S&gt;,
+</span><span class="attr">#[derive(Default, Clone)]
+</span><span class="kw">pub struct </span>Style {
+    components: Object,
 }
 
-<span class="kw">impl</span>&lt;S&gt; Clone <span class="kw">for </span>Style&lt;S&gt;
-<span class="kw">where
-    </span>S: BuildHasher + Clone,
-{
-    <span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
-        <span class="kw">let </span><span class="kw-2">mut </span>new_map = HashMap::with_capacity_and_hasher(
-            <span class="self">self</span>.components.len(),
-            <span class="self">self</span>.components.hasher().clone(),
-        );
-
-        <span class="kw">for </span>(name, value) <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.components {
-            new_map.insert(name.clone(), value.clone());
-        }
-
-        <span class="self">Self </span>{
-            components: new_map,
-        }
-    }
-}
-
-<span class="kw">impl</span>&lt;S&gt; std::fmt::Debug <span class="kw">for </span>Style&lt;S&gt; {
+<span class="kw">impl </span>std::fmt::Debug <span class="kw">for </span>Style {
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
         <span class="kw">let </span><span class="kw-2">mut </span>t = f.debug_tuple(<span class="string">&quot;Style&quot;</span>);
         <span class="kw">for </span>component <span class="kw">in </span><span class="self">self</span>.components.values() {
@@ -279,29 +178,7 @@
     </span><span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>with_capacity(capacity: usize) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            components: HashMap::with_capacity(capacity),
-        }
-    }
-}
-
-<span class="kw">impl</span>&lt;S&gt; Style&lt;S&gt;
-<span class="kw">where
-    </span>S: BuildHasher,
-{
-    <span class="doccomment">/// Returns a new style using the provided `hasher`.
-    </span><span class="kw">pub fn </span>with_hasher(hasher: S) -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            components: HashMap::with_hasher(hasher),
-        }
-    }
-
-    <span class="doccomment">/// Returns a new style with that:
-    ///
-    /// - has enough storage to hold `capacity` elements before reallocating
-    /// - uses `hasher` for the internal [`HashMap`]
-    </span><span class="kw">pub fn </span>with_capacity_and_hasher(capacity: usize, hasher: S) -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            components: HashMap::with_capacity_and_hasher(capacity, hasher),
+            components: Object::with_capacity(capacity),
         }
     }
 
@@ -343,53 +220,20 @@
     /// If both `self` and `other` contain a value of the same type, the value
     /// in `self` will be used.
     </span><span class="attr">#[must_use]
-    </span><span class="kw">pub fn </span>merged_with(<span class="kw-2">mut </span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self
-    </span><span class="kw">where
-        </span>S: Clone,
-    {
-        <span class="self">self</span>.merge_with_filter(other, |<span class="kw">_</span>| <span class="bool-val">true</span>);
+    </span><span class="kw">pub fn </span>merged_with(<span class="kw-2">mut </span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.components
+            .merge_with_filter(<span class="kw-2">&amp;</span>other.components, |<span class="kw">_</span>| <span class="bool-val">true</span>);
         <span class="self">self
     </span>}
 
     <span class="doccomment">/// Returns a new [`Style`], merging the components of `self` with `other`
     /// only when the component is [`inherited`](StyleComponent::inherited).
     </span><span class="attr">#[must_use]
-    </span><span class="kw">pub fn </span>inherited_from(<span class="kw-2">mut </span><span class="self">self</span>, parent: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self
-    </span><span class="kw">where
-        </span>S: Clone,
-    {
-        <span class="self">self</span>.merge_with_filter(parent, AnyComponent::inherited);
+    </span><span class="kw">pub fn </span>inherited_from(<span class="kw-2">mut </span><span class="self">self</span>, parent: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.components
+            .merge_with_filter(<span class="kw-2">&amp;</span>parent.components, AnyComponent::inherited);
         <span class="self">self
     </span>}
-
-    <span class="kw">fn </span>merge_with_filter(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="kw-2">mut </span>filter: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;</span>AnyComponent) -&gt; bool)
-    <span class="kw">where
-        </span>S: Clone,
-    {
-        <span class="kw">let </span>self_types = <span class="self">self</span>.components.keys().cloned().collect::&lt;HashSet&lt;<span class="kw">_</span>&gt;&gt;();
-        <span class="kw">let </span>parent_types = other.components.keys().cloned().collect::&lt;HashSet&lt;<span class="kw">_</span>&gt;&gt;();
-
-        <span class="kw">for </span>type_id <span class="kw">in </span>self_types.union(<span class="kw-2">&amp;</span>parent_types) {
-            <span class="kw">match </span>(
-                <span class="self">self</span>.components.get_mut(type_id),
-                other.components.get(type_id),
-            ) {
-                (<span class="prelude-val">Some</span>(self_component), <span class="prelude-val">Some</span>(other_component)) =&gt; {
-                    <span class="kw">if </span>filter(other_component) {
-                        self_component.merge_with(other_component);
-                    }
-                }
-                (<span class="prelude-val">Some</span>(<span class="kw">_</span>), <span class="prelude-val">None</span>) =&gt; {}
-                (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(component)) =&gt; {
-                    <span class="kw">if </span>!filter(component) {
-                        <span class="kw">continue</span>;
-                    }
-                    <span class="self">self</span>.components.insert(type_id.clone(), component.clone());
-                }
-                (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="macro">unreachable!</span>(),
-            };
-        }
-    }
 
     <span class="doccomment">/// Returns the number of components in this style.
     </span><span class="attr">#[must_use]
@@ -410,7 +254,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, S&gt; IntoIterator <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Style&lt;S&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; IntoIterator <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Style {
     <span class="kw">type </span>IntoIter = Iter&lt;<span class="lifetime">&#39;a</span>&gt;;
     <span class="kw">type </span>Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>AnyComponent;
 
@@ -419,7 +263,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;S&gt; IntoIterator <span class="kw">for </span>Style&lt;S&gt; {
+<span class="kw">impl </span>IntoIterator <span class="kw">for </span>Style {
     <span class="kw">type </span>IntoIter = IntoIter;
     <span class="kw">type </span>Item = AnyComponent;
 
@@ -429,7 +273,7 @@
 }
 
 <span class="doccomment">/// An iterator over the components contained in a [`Style`].
-</span><span class="kw">pub struct </span>Iter&lt;<span class="lifetime">&#39;a</span>&gt;(hash_map::Values&lt;<span class="lifetime">&#39;a</span>, Name, AnyComponent&gt;);
+</span><span class="kw">pub struct </span>Iter&lt;<span class="lifetime">&#39;a</span>&gt;(alot::unordered::Iter&lt;<span class="lifetime">&#39;a</span>, AnyComponent&gt;);
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Iterator <span class="kw">for </span>Iter&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="kw">type </span>Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>AnyComponent;
@@ -439,7 +283,7 @@
     }
 }
 
-<span class="kw">pub struct </span>IntoIter(hash_map::IntoValues&lt;Name, AnyComponent&gt;);
+<span class="kw">pub struct </span>IntoIter(alot::unordered::IntoIter&lt;AnyComponent&gt;);
 
 <span class="kw">impl </span>Iterator <span class="kw">for </span>IntoIter {
     <span class="kw">type </span>Item = AnyComponent;
