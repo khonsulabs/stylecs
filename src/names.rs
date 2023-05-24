@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 use std::fmt::{Debug, Display};
+use std::ops::Deref;
 
 use interner::global::{GlobalString, StaticPooledString, StringPool};
 use stylecs_shared::InvalidIdentifier;
@@ -81,6 +82,14 @@ impl PartialEq<str> for Identifier {
 impl<'a> PartialEq<&'a str> for Identifier {
     fn eq(&self, other: &&'a str) -> bool {
         self == *other
+    }
+}
+
+impl Deref for Identifier {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 

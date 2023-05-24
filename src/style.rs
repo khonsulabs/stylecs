@@ -1,38 +1,15 @@
-use std::collections::hash_map::RandomState;
-use std::collections::{hash_map, HashMap, HashSet};
-use std::hash::BuildHasher;
-
 use crate::any::AnyComponent;
 use crate::components::DynamicComponent;
+use crate::object::Object;
 use crate::{Name, StyleComponent};
 
 /// A set of style components.
-#[derive(Default)]
-pub struct Style<S = RandomState> {
-    components: HashMap<Name, AnyComponent, S>,
+#[derive(Default, Clone)]
+pub struct Style {
+    components: Object,
 }
 
-impl<S> Clone for Style<S>
-where
-    S: BuildHasher + Clone,
-{
-    fn clone(&self) -> Self {
-        let mut new_map = HashMap::with_capacity_and_hasher(
-            self.components.len(),
-            self.components.hasher().clone(),
-        );
-
-        for (name, value) in &self.components {
-            new_map.insert(name.clone(), value.clone());
-        }
-
-        Self {
-            components: new_map,
-        }
-    }
-}
-
-impl<S> std::fmt::Debug for Style<S> {
+impl std::fmt::Debug for Style {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut t = f.debug_tuple("Style");
         for component in self.components.values() {
@@ -54,29 +31,7 @@ impl Style {
     #[must_use]
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
-            components: HashMap::with_capacity(capacity),
-        }
-    }
-}
-
-impl<S> Style<S>
-where
-    S: BuildHasher,
-{
-    /// Returns a new style using the provided `hasher`.
-    pub fn with_hasher(hasher: S) -> Self {
-        Self {
-            components: HashMap::with_hasher(hasher),
-        }
-    }
-
-    /// Returns a new style with that:
-    ///
-    /// - has enough storage to hold `capacity` elements before reallocating
-    /// - uses `hasher` for the internal [`HashMap`]
-    pub fn with_capacity_and_hasher(capacity: usize, hasher: S) -> Self {
-        Self {
-            components: HashMap::with_capacity_and_hasher(capacity, hasher),
+            components: Object::with_capacity(capacity),
         }
     }
 
@@ -118,52 +73,19 @@ where
     /// If both `self` and `other` contain a value of the same type, the value
     /// in `self` will be used.
     #[must_use]
-    pub fn merged_with(mut self, other: &Self) -> Self
-    where
-        S: Clone,
-    {
-        self.merge_with_filter(other, |_| true);
+    pub fn merged_with(mut self, other: &Self) -> Self {
+        self.components
+            .merge_with_filter(&other.components, |_| true);
         self
     }
 
     /// Returns a new [`Style`], merging the components of `self` with `other`
     /// only when the component is [`inherited`](StyleComponent::inherited).
     #[must_use]
-    pub fn inherited_from(mut self, parent: &Self) -> Self
-    where
-        S: Clone,
-    {
-        self.merge_with_filter(parent, AnyComponent::inherited);
+    pub fn inherited_from(mut self, parent: &Self) -> Self {
+        self.components
+            .merge_with_filter(&parent.components, AnyComponent::inherited);
         self
-    }
-
-    fn merge_with_filter(&mut self, other: &Self, mut filter: impl FnMut(&AnyComponent) -> bool)
-    where
-        S: Clone,
-    {
-        let self_types = self.components.keys().cloned().collect::<HashSet<_>>();
-        let parent_types = other.components.keys().cloned().collect::<HashSet<_>>();
-
-        for type_id in self_types.union(&parent_types) {
-            match (
-                self.components.get_mut(type_id),
-                other.components.get(type_id),
-            ) {
-                (Some(self_component), Some(other_component)) => {
-                    if filter(other_component) {
-                        self_component.merge_with(other_component);
-                    }
-                }
-                (Some(_), None) => {}
-                (None, Some(component)) => {
-                    if !filter(component) {
-                        continue;
-                    }
-                    self.components.insert(type_id.clone(), component.clone());
-                }
-                (None, None) => unreachable!(),
-            };
-        }
     }
 
     /// Returns the number of components in this style.
@@ -185,7 +107,7 @@ where
     }
 }
 
-impl<'a, S> IntoIterator for &'a Style<S> {
+impl<'a> IntoIterator for &'a Style {
     type IntoIter = Iter<'a>;
     type Item = &'a AnyComponent;
 
@@ -194,7 +116,7 @@ impl<'a, S> IntoIterator for &'a Style<S> {
     }
 }
 
-impl<S> IntoIterator for Style<S> {
+impl IntoIterator for Style {
     type IntoIter = IntoIter;
     type Item = AnyComponent;
 
@@ -204,7 +126,7 @@ impl<S> IntoIterator for Style<S> {
 }
 
 /// An iterator over the components contained in a [`Style`].
-pub struct Iter<'a>(hash_map::Values<'a, Name, AnyComponent>);
+pub struct Iter<'a>(alot::unordered::Iter<'a, AnyComponent>);
 
 impl<'a> Iterator for Iter<'a> {
     type Item = &'a AnyComponent;
@@ -214,7 +136,7 @@ impl<'a> Iterator for Iter<'a> {
     }
 }
 
-pub struct IntoIter(hash_map::IntoValues<Name, AnyComponent>);
+pub struct IntoIter(alot::unordered::IntoIter<AnyComponent>);
 
 impl Iterator for IntoIter {
     type Item = AnyComponent;
