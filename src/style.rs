@@ -1,12 +1,16 @@
+use std::cmp::Ordering;
+use std::ops::Deref;
+
+use kempt::Map;
+
 use crate::any::AnyComponent;
 use crate::components::DynamicComponent;
-use crate::object::Object;
 use crate::{Name, StyleComponent};
 
 /// A set of style components.
 #[derive(Default, Clone)]
 pub struct Style {
-    components: Object,
+    components: Map<ComponentName<'static>, AnyComponent>,
 }
 
 impl std::fmt::Debug for Style {
@@ -31,7 +35,7 @@ impl Style {
     #[must_use]
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
-            components: Object::with_capacity(capacity),
+            components: Map::with_capacity(capacity),
         }
     }
 
@@ -39,7 +43,7 @@ impl Style {
     /// will be replaced.
     pub fn push<T: DynamicComponent + Clone>(&mut self, component: T) {
         let c = AnyComponent::new(component);
-        self.components.insert(c.name(), c);
+        self.components.insert(ComponentName::Owned(c.name()), c);
     }
 
     /// Adds a component to the style and returns it. Any existing values of the
@@ -53,13 +57,15 @@ impl Style {
     /// Returns the style component of type `T`, if present.
     #[must_use]
     pub fn get<T: StyleComponent>(&self) -> Option<&T> {
-        self.components.get(&T::name()).and_then(AnyComponent::get)
+        self.components
+            .get(&ComponentName::Owned(T::name()))
+            .and_then(AnyComponent::get)
     }
 
     /// Returns the style component of type `T`, if present.
     #[must_use]
     pub fn get_by_name(&self, name: &Name) -> Option<&AnyComponent> {
-        self.components.get(name)
+        self.components.get(&ComponentName::Borrowed(name))
     }
 
     /// Returns the style component of type `T`. If not present, `T::default()`
@@ -74,8 +80,11 @@ impl Style {
     /// in `self` will be used.
     #[must_use]
     pub fn merged_with(mut self, other: &Self) -> Self {
-        self.components
-            .merge_with_filter(&other.components, |_| true);
+        self.components.merge_with(
+            &other.components,
+            |_key, value| Some(value.clone()),
+            |_key, mine, other| mine.merge_with(other),
+        );
         self
     }
 
@@ -83,8 +92,15 @@ impl Style {
     /// only when the component is [`inherited`](StyleComponent::inherited).
     #[must_use]
     pub fn inherited_from(mut self, parent: &Self) -> Self {
-        self.components
-            .merge_with_filter(&parent.components, AnyComponent::inherited);
+        self.components.merge_with(
+            &parent.components,
+            |_key, value| value.inherited().then(|| value.clone()),
+            |_key, mine, other| {
+                if other.inherited() {
+                    mine.merge_with(other);
+                }
+            },
+        );
         self
     }
 
@@ -126,7 +142,7 @@ impl IntoIterator for Style {
 }
 
 /// An iterator over the components contained in a [`Style`].
-pub struct Iter<'a>(alot::unordered::Iter<'a, AnyComponent>);
+pub struct Iter<'a>(kempt::map::Values<'a, ComponentName<'static>, AnyComponent>);
 
 impl<'a> Iterator for Iter<'a> {
     type Item = &'a AnyComponent;
@@ -136,12 +152,60 @@ impl<'a> Iterator for Iter<'a> {
     }
 }
 
-pub struct IntoIter(alot::unordered::IntoIter<AnyComponent>);
+pub struct IntoIter(kempt::map::IntoValues<ComponentName<'static>, AnyComponent>);
 
 impl Iterator for IntoIter {
     type Item = AnyComponent;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next()
+    }
+}
+
+#[derive(Clone)]
+enum ComponentName<'a> {
+    Borrowed(&'a Name),
+    Owned(Name),
+}
+
+impl<'a> Deref for ComponentName<'a> {
+    type Target = Name;
+
+    fn deref(&self) -> &Self::Target {
+        match self {
+            ComponentName::Borrowed(name) => name,
+            ComponentName::Owned(name) => name,
+        }
+    }
+}
+
+impl<'a> Eq for ComponentName<'a> {}
+
+impl<'a, 'b> PartialEq<ComponentName<'b>> for ComponentName<'a> {
+    fn eq(&self, other: &ComponentName<'b>) -> bool {
+        match (self, other) {
+            (Self::Borrowed(l0), ComponentName::Borrowed(r0)) => l0 == r0,
+            (Self::Owned(l0), ComponentName::Owned(r0)) => l0 == r0,
+            _ => false,
+        }
+    }
+}
+
+impl<'a> Ord for ComponentName<'a> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.partial_cmp(other).expect("infallible")
+    }
+}
+
+impl<'a, 'b> PartialOrd<ComponentName<'b>> for ComponentName<'a> {
+    fn partial_cmp(&self, other: &ComponentName<'b>) -> Option<std::cmp::Ordering> {
+        // Prioritize comparing the name, as in general the component names
+        // shouldn't conflict.
+        let a = &**self;
+        let b = &**other;
+        Some(match a.name.as_ptr().cmp(&b.name.as_ptr()) {
+            order @ (Ordering::Greater | Ordering::Less) => order,
+            Ordering::Equal => a.authority.as_ptr().cmp(&b.authority.as_ptr()),
+        })
     }
 }

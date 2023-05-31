@@ -16,8 +16,9 @@ derive = ["dep:stylecs-macros"]
 [dependencies]
 stylecs-macros = { path = "./stylecs-macros", optional = true }
 stylecs-shared = { path = "./stylecs-shared" }
-alot = "0.1"
+alot = "0.1.0"
 interner = { git = "https://github.com/khonsulabs/interner" }
+kempt = "0.1.0"
 
 [workspace]
 members = ["stylecs-macros", "stylecs-shared", "xtask"]

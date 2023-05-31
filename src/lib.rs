@@ -21,7 +21,6 @@
 mod any;
 mod components;
 mod names;
-mod object;
 mod style;
 
 #[doc(hidden)]
