@@ -1,14 +1,14 @@
 use stylecs::{Identifier, StyleComponent};
 
 #[derive(StyleComponent, Debug, Clone)]
+#[style(inherited = true)]
 struct Inheritable;
 
 #[derive(StyleComponent, Debug, Clone)]
-#[style(inherited = false)]
 struct NotInheritable;
 
 #[derive(StyleComponent, Debug, Eq, PartialEq, Clone)]
-#[style(name = additive, authority = gooey, inherited = false, merge = Self(self.0 + other.0))]
+#[style(name = additive, authority = gooey, inherited = false, merge = self.0 += other.0)]
 struct AdditiveMerge(u32);
 
 #[test]
