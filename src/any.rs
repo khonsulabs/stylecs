@@ -1,4 +1,3 @@
-use std::any::TypeId;
 use std::fmt::Debug;
 use std::option::Option;
 
@@ -72,18 +71,17 @@ impl<T: DynamicComponent + Clone> AnyStyleComponent for Option<T> {
     }
 }
 
+/// A boxed [`StyleComponent`].
 pub struct AnyComponent(Box<dyn AnyStyleComponent>);
 
 impl AnyComponent {
+    /// Returns a new instance wrapping `component`.
     pub fn new<C: DynamicComponent + Clone>(component: C) -> Self {
         Self(Box::new(Some(component)))
     }
 
-    #[must_use]
-    pub fn component_type_id(&self) -> TypeId {
-        self.0.as_any().type_id()
-    }
-
+    /// Returns the contained style component. Returns `None` if `T` is not the
+    /// same type that was wrapped.
     #[must_use]
     pub fn get<T: StyleComponent>(&self) -> Option<&T> {
         self.0
@@ -92,19 +90,46 @@ impl AnyComponent {
             .and_then(Option::as_ref)
     }
 
+    /// Returns the contained style component. Returns `None` if `T` is not the
+    /// same type that was wrapped.
+    #[must_use]
+    pub fn get_mut<T: StyleComponent>(&mut self) -> Option<&mut T> {
+        self.0
+            .as_mut_any()
+            .downcast_mut::<Option<T>>()
+            .and_then(Option::as_mut)
+    }
+
+    /// Returns the result of [`DynamicComponent::inherited`].
+    #[must_use]
     pub fn inherited(&self) -> bool {
         self.0.inherited()
     }
 
+    /// Calls [`DynamicComponent::merge`] to merge `self` with `other`.
+    ///
+    /// # Panics
+    ///
+    /// This function panics if `other` does not wrap the same type as `self` is
+    /// wrapping.
     pub fn merge_with(&mut self, other: &Self) {
         self.0.merge_with(other.0.as_ref());
     }
 
+    /// Calls [`DynamicComponent::merge`] and returns the updated value.
+    ///
+    /// # Panics
+    ///
+    /// This function panics if `other` does not wrap the same type as `self` is
+    /// wrapping.
+    #[must_use]
     pub fn merged_with(mut self, other: &Self) -> Self {
         self.merge_with(other);
         self
     }
 
+    /// Returns the name of the component.
+    #[must_use]
     pub fn name(&self) -> Name {
         self.0.name()
     }

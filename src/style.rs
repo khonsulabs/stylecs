@@ -1,16 +1,14 @@
-use std::cmp::Ordering;
-use std::ops::Deref;
-
 use kempt::Map;
 
 use crate::any::AnyComponent;
 use crate::components::DynamicComponent;
+use crate::names::NameKey;
 use crate::{Name, StyleComponent};
 
 /// A set of style components.
 #[derive(Default, Clone)]
 pub struct Style {
-    components: Map<ComponentName<'static>, AnyComponent>,
+    components: Map<NameKey<'static>, AnyComponent>,
 }
 
 impl std::fmt::Debug for Style {
@@ -43,7 +41,7 @@ impl Style {
     /// will be replaced.
     pub fn push<T: DynamicComponent + Clone>(&mut self, component: T) {
         let c = AnyComponent::new(component);
-        self.components.insert(ComponentName::Owned(c.name()), c);
+        self.components.insert(NameKey::from(c.name()), c);
     }
 
     /// Adds a component to the style and returns it. Any existing values of the
@@ -58,14 +56,14 @@ impl Style {
     #[must_use]
     pub fn get<T: StyleComponent>(&self) -> Option<&T> {
         self.components
-            .get(&ComponentName::Owned(T::name()))
+            .get(&NameKey::from(T::name()))
             .and_then(AnyComponent::get)
     }
 
     /// Returns the style component of type `T`, if present.
     #[must_use]
     pub fn get_by_name(&self, name: &Name) -> Option<&AnyComponent> {
-        self.components.get(&ComponentName::Borrowed(name))
+        self.components.get(&NameKey::from(name))
     }
 
     /// Returns the style component of type `T`. If not present, `T::default()`
@@ -142,7 +140,7 @@ impl IntoIterator for Style {
 }
 
 /// An iterator over the components contained in a [`Style`].
-pub struct Iter<'a>(kempt::map::Values<'a, ComponentName<'static>, AnyComponent>);
+pub struct Iter<'a>(kempt::map::Values<'a, NameKey<'static>, AnyComponent>);
 
 impl<'a> Iterator for Iter<'a> {
     type Item = &'a AnyComponent;
@@ -152,60 +150,12 @@ impl<'a> Iterator for Iter<'a> {
     }
 }
 
-pub struct IntoIter(kempt::map::IntoValues<ComponentName<'static>, AnyComponent>);
+pub struct IntoIter(kempt::map::IntoValues<NameKey<'static>, AnyComponent>);
 
 impl Iterator for IntoIter {
     type Item = AnyComponent;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next()
-    }
-}
-
-#[derive(Clone)]
-enum ComponentName<'a> {
-    Borrowed(&'a Name),
-    Owned(Name),
-}
-
-impl<'a> Deref for ComponentName<'a> {
-    type Target = Name;
-
-    fn deref(&self) -> &Self::Target {
-        match self {
-            ComponentName::Borrowed(name) => name,
-            ComponentName::Owned(name) => name,
-        }
-    }
-}
-
-impl<'a> Eq for ComponentName<'a> {}
-
-impl<'a, 'b> PartialEq<ComponentName<'b>> for ComponentName<'a> {
-    fn eq(&self, other: &ComponentName<'b>) -> bool {
-        match (self, other) {
-            (Self::Borrowed(l0), ComponentName::Borrowed(r0)) => l0 == r0,
-            (Self::Owned(l0), ComponentName::Owned(r0)) => l0 == r0,
-            _ => false,
-        }
-    }
-}
-
-impl<'a> Ord for ComponentName<'a> {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.partial_cmp(other).expect("infallible")
-    }
-}
-
-impl<'a, 'b> PartialOrd<ComponentName<'b>> for ComponentName<'a> {
-    fn partial_cmp(&self, other: &ComponentName<'b>) -> Option<std::cmp::Ordering> {
-        // Prioritize comparing the name, as in general the component names
-        // shouldn't conflict.
-        let a = &**self;
-        let b = &**other;
-        Some(match a.name.as_ptr().cmp(&b.name.as_ptr()) {
-            order @ (Ordering::Greater | Ordering::Less) => order,
-            Ordering::Equal => a.authority.as_ptr().cmp(&b.authority.as_ptr()),
-        })
     }
 }

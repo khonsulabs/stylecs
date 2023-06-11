@@ -1,6 +1,8 @@
 use std::borrow::Cow;
+use std::cmp::Ordering;
 use std::fmt::{Debug, Display};
 use std::ops::Deref;
+use std::str::FromStr;
 
 use interner::global::{GlobalString, StaticPooledString, StringPool};
 use stylecs_shared::InvalidIdentifier;
@@ -96,7 +98,7 @@ impl Deref for Identifier {
 /// A globally unique name.
 ///
 /// This structure has an [`authority`](Self::authority) and a [`name`](Self::name).
-#[derive(Debug, Eq, PartialEq, Hash, Clone)]
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone)]
 pub struct Name {
     /// The unique name of the source of this name. For example, this could be
     /// the name of the crate it was defined within.
@@ -142,6 +144,61 @@ impl Name {
             name: name.into_identifier()?,
         })
     }
+}
+
+impl<'a> From<Name> for Cow<'a, Name> {
+    fn from(value: Name) -> Self {
+        Cow::Owned(value)
+    }
+}
+
+impl<'a> From<&'a Name> for Cow<'a, Name> {
+    fn from(value: &'a Name) -> Self {
+        Cow::Borrowed(value)
+    }
+}
+
+impl Display for Name {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if PRIVATE != self.authority.0 {
+            f.write_str(&self.authority)?;
+            f.write_str("::")?;
+        }
+        f.write_str(&self.name)
+    }
+}
+
+impl FromStr for Name {
+    type Err = InvalidIdentifier;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if let Some((authority, name)) = s.split_once("::") {
+            let authority = Identifier::new(authority)?;
+            let name = Identifier::new(name)?;
+            Ok(Self { authority, name })
+        } else {
+            let name = Identifier::new(s)?;
+            Ok(Self {
+                authority: Identifier::private(),
+                name,
+            })
+        }
+    }
+}
+
+#[test]
+fn name_strings() {
+    let private = Name::private("private").unwrap();
+    let private_string = private.to_string();
+    assert_eq!(private_string, "private");
+    let parsed: Name = private_string.parse().unwrap();
+    assert_eq!(parsed, private);
+
+    let qualified = Name::new("authority", "name").unwrap();
+    let qualified_string = qualified.to_string();
+    assert_eq!(qualified_string, "authority::name");
+    let parsed: Name = qualified_string.parse().unwrap();
+    assert_eq!(parsed, qualified);
 }
 
 pub trait Identifiable {
@@ -234,5 +291,92 @@ impl<'a> From<&'a StaticName> for Name {
             authority: Identifier(value.authority.get().clone()),
             name: Identifier(value.name.get().clone()),
         }
+    }
+}
+
+/// A [`Name`] type used for efficient lookups in ordered collections.
+///
+/// This type's [`Ord`] implementation provides a stable ordering that is
+/// efficient and does not rely on string comparisons. However, it does not sort
+/// ascending, while `Name`'s [`Ord`] implementation sorts ascending.
+///
+/// There is no benefit to using this type in a hash-based collection, so this
+/// type does not implement [`Hash`].
+#[derive(Clone)]
+pub enum NameKey<'a> {
+    /// A borrowed name.
+    Borrowed(&'a Name),
+    /// An owned name.
+    Owned(Name),
+}
+
+impl<'a> From<NameKey<'a>> for Name {
+    fn from(name: NameKey<'a>) -> Self {
+        match name {
+            NameKey::Borrowed(name) => name.clone(),
+            NameKey::Owned(name) => name,
+        }
+    }
+}
+
+impl<'a> Deref for NameKey<'a> {
+    type Target = Name;
+
+    fn deref(&self) -> &Self::Target {
+        match self {
+            NameKey::Borrowed(name) => name,
+            NameKey::Owned(name) => name,
+        }
+    }
+}
+
+impl<'a> Eq for NameKey<'a> {}
+
+impl<'a, 'b> PartialEq<NameKey<'b>> for NameKey<'a> {
+    fn eq(&self, other: &NameKey<'b>) -> bool {
+        **self == **other
+    }
+}
+
+impl<'a> Ord for NameKey<'a> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        // Prioritize comparing the name, as in general the component names
+        // shouldn't conflict.
+        let a = &**self;
+        let b = &**other;
+        match a.name.as_ptr().cmp(&b.name.as_ptr()) {
+            order @ (Ordering::Greater | Ordering::Less) => order,
+            Ordering::Equal => a.authority.as_ptr().cmp(&b.authority.as_ptr()),
+        }
+    }
+}
+
+impl<'a, 'b> PartialOrd<NameKey<'b>> for NameKey<'a> {
+    fn partial_cmp(&self, other: &NameKey<'b>) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<'a> From<&'a Name> for NameKey<'a> {
+    fn from(value: &'a Name) -> Self {
+        Self::Borrowed(value)
+    }
+}
+
+impl From<Name> for NameKey<'_> {
+    fn from(value: Name) -> Self {
+        Self::Owned(value)
+    }
+}
+
+impl Debug for NameKey<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(&**self, f)
+    }
+}
+
+impl Display for NameKey<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&**self, f)
     }
 }

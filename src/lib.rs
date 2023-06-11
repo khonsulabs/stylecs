@@ -23,9 +23,10 @@ mod components;
 mod names;
 mod style;
 
+pub use any::AnyComponent;
 #[doc(hidden)]
 pub use names::IDENTIFIERS;
-pub use names::{Identifier, Name, StaticName};
+pub use names::{Identifier, Name, NameKey, StaticName};
 #[cfg(feature = "derive")]
 pub use stylecs_macros::StyleComponentAttribute as StyleComponent;
 pub use stylecs_shared::InvalidIdentifier;
