@@ -6,7 +6,7 @@ use syn::{DeriveInput, Expr};
 
 #[derive(Attribute, Debug)]
 #[attribute(ident = style)]
-struct StyleComponentAttribute {
+struct StyleComponent {
     name: Option<Ident>,
     authority: Option<Ident>,
     inherited: Option<bool>,
@@ -14,7 +14,7 @@ struct StyleComponentAttribute {
 }
 
 #[manyhow]
-#[proc_macro_derive(StyleComponentAttribute, attributes(style))]
+#[proc_macro_derive(StyleComponent, attributes(style))]
 pub fn style_component_derive(input: TokenStream) -> manyhow::Result<TokenStream> {
     let DeriveInput {
         attrs,
@@ -22,12 +22,12 @@ pub fn style_component_derive(input: TokenStream) -> manyhow::Result<TokenStream
         generics,
         ..
     } = syn::parse2(input)?;
-    let StyleComponentAttribute {
+    let StyleComponent {
         name,
         authority,
         inherited,
         merge,
-    } = StyleComponentAttribute::from_attributes(&attrs)?;
+    } = StyleComponent::from_attributes(&attrs)?;
 
     let name = if let Some(name) = name {
         validate(&name)?
