@@ -1,3 +1,3 @@
 (function() {var implementors = {
-"stylecs":[["impl&lt;'a&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.69.0/core/iter/traits/iterator/trait.Iterator.html\" title=\"trait core::iter::traits::iterator::Iterator\">Iterator</a> for <a class=\"struct\" href=\"stylecs/struct.Iter.html\" title=\"struct stylecs::Iter\">Iter</a>&lt;'a&gt;"]]
+"stylecs":[["impl&lt;'a&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.70.0/core/iter/traits/iterator/trait.Iterator.html\" title=\"trait core::iter::traits::iterator::Iterator\">Iterator</a> for <a class=\"struct\" href=\"stylecs/struct.Iter.html\" title=\"struct stylecs::Iter\">Iter</a>&lt;'a&gt;"]]
 };if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"derive":["StyleComponent"],"macro":["static_name","style"],"struct":["Identifier","InvalidIdentifier","Iter","Name","StaticName","Style"],"trait":["DynamicComponent","StyleComponent"]};
+window.SIDEBAR_ITEMS = {"derive":["StyleComponent"],"enum":["NameKey"],"macro":["static_name","style"],"struct":["AnyComponent","Identifier","InvalidIdentifier","Iter","Name","StaticName","Style"],"trait":["DynamicComponent","StyleComponent"]};
