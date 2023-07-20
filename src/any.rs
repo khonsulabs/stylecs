@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 use std::option::Option;
+use std::panic::{RefUnwindSafe, UnwindSafe};
 
 use crate::components::DynamicComponent;
 use crate::{Name, StyleComponent};
@@ -7,7 +8,9 @@ use crate::{Name, StyleComponent};
 /// A [`DynamicComponent`]/[`StyleComponent`] that can be boxed for storage and
 /// cloned.
 #[allow(clippy::module_name_repetitions)]
-pub(crate) trait AnyStyleComponent: Send + Sync + Debug + 'static {
+pub(crate) trait AnyStyleComponent:
+    RefUnwindSafe + UnwindSafe + Send + Sync + Debug + 'static
+{
     /// Returns the style component as `Any`.
     #[must_use]
     fn as_any(&self) -> &'_ dyn std::any::Any;
@@ -28,7 +31,10 @@ pub(crate) trait AnyStyleComponent: Send + Sync + Debug + 'static {
     fn name(&self) -> Name;
 }
 
-impl<T: DynamicComponent + Clone> AnyStyleComponent for Option<T> {
+impl<T> AnyStyleComponent for Option<T>
+where
+    T: DynamicComponent + Clone + RefUnwindSafe + UnwindSafe,
+{
     fn as_any(&self) -> &'_ dyn std::any::Any {
         self
     }

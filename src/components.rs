@@ -1,5 +1,6 @@
 use std::any::Any;
 use std::fmt::Debug;
+use std::panic::{RefUnwindSafe, UnwindSafe};
 
 use crate::{Identifier, Name};
 
@@ -18,7 +19,7 @@ use crate::{Identifier, Name};
 /// - `authority`: An identifier. By default, this is [`Identifier::private()`].
 /// - `merge`: An expression to evaluate when merging. `self` and `other` are
 ///   defined. By default, components do not merge.
-pub trait StyleComponent: Any + Send + Sync + Debug + 'static {
+pub trait StyleComponent: Any + RefUnwindSafe + UnwindSafe + Send + Sync + Debug + 'static {
     /// The unique name of this style component.
     ///
     /// This function returns a qualified name. The default implementation uses
@@ -63,7 +64,9 @@ pub trait StyleComponent: Any + Send + Sync + Debug + 'static {
 ///
 /// This trait allows style components to be defined that didn't originate from
 /// Rust code -- e.g., a scripting language.
-pub trait DynamicComponent: Any + Debug + Send + Sync + 'static {
+pub trait DynamicComponent:
+    Any + Debug + Send + Sync + UnwindSafe + RefUnwindSafe + 'static
+{
     /// The unique name of this style component.
     ///
     /// Each name component must be a valid identifier: `a-z`, `A-Z`, or `_`.
